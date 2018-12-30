@@ -1,12 +1,21 @@
- package com.example.anthony.tutoandroidemse;
+package com.example.anthony.tutoandroidemse;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.view.ActionProvider;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,158 +29,167 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
- public class ContextManagementActivity extends Activity
- {
-     private String room;
-     private RoomContextHttpManager httpManager = new RoomContextHttpManager();
-     private RelativeLayout contextView;
-     private RoomContextState state;
-     private ImageView image;
+import java.util.ArrayList;
 
-     @Override
-     protected void onCreate(Bundle savedInstanceState)
-     {
-         super.onCreate(savedInstanceState);
-         setContentView(R.layout.activity_context_management);
+public class ContextManagementActivity extends Activity
+{
+    private Spinner buildingSpinner, roomSpinner, lightSpinner;
+    private TextView status, level;
+    private ImageView bulb;
+    private Switch toggle;
+    private SeekBar seekbar;
 
-         contextView = findViewById(R.id.contextLayout);
-         image = findViewById(R.id.imageView1);
+    private LightContextState lightState;
 
-         findViewById(R.id.buttonCheck).setOnClickListener(new View.OnClickListener()
-         {
-             public void onClick(View v)
-             {
-                 room = ((EditText) findViewById(R.id.editText1)).getText().toString();
-                 retrieveRoomContextState(room);
-             }
-         });
+    private ContextHttpManager httpManager;
 
-         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View v) {
-                 if (room != null) {
-                     switchLight();
-                     retrieveRoomContextState(room);
-                 }
-                 else
-                     Toast.makeText(ContextManagementActivity.this, "No room selected !", Toast.LENGTH_SHORT).show();
-             }
-         });
-     }
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_context_management);
 
+        httpManager = new ContextHttpManager(this);
 
-     @Override
-     public boolean onCreateOptionsMenu(Menu menu)
-     {
-         getMenuInflater().inflate(R.menu.main, menu);
-         return true;
-     }
+        buildingSpinner = findViewById(R.id.buildingSpinner);
+        roomSpinner = findViewById(R.id.roomSpinner);
+        lightSpinner = findViewById(R.id.lightSpinner);
 
-     public void switchLight()
-     {
-         httpManager.switchLight(room);
-     }
+        level = findViewById(R.id.levelValue);
+        status = findViewById(R.id.statusValue);
 
-     protected void retrieveRoomContextState(String room)
-     {
-        httpManager.retrieveRoomContextState(room);
-     }
+        bulb = findViewById(R.id.bulb);
+        toggle = findViewById(R.id.toggle);
+        seekbar = findViewById(R.id.seekBar);
 
-     private void updateContextView() {
-         if (this.state != null) {
-             contextView.setVisibility(View.VISIBLE);
-             ((TextView) findViewById(R.id.textViewLightValue)).setText(Integer.toString(state.getLight()));
-             if (state.getStatus().equals("ON"))
-                 image.setImageResource(R.drawable.ic_bulb_on);
-             else
-                 image.setImageResource(R.drawable.ic_bulb_off);
-         }
-     }
+        buildingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                BuildingContextState state = (BuildingContextState) parent.getSelectedItem();
 
-     class RoomContextHttpManager
-     {
-         private final String CONTEXT_SERVER_URL = "http://faircorp-anthony-meranger.cleverapps.io/api/rooms";
+                httpManager.retrieveBuildingsRooms(state.getId());
+            }
 
-         void switchLight(String room)
-         {
-             String url = CONTEXT_SERVER_URL + "/" + room + "/switchLight";
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+            }
+        });
 
-             RequestQueue queue = Volley.newRequestQueue(ContextManagementActivity.this);
+        roomSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                RoomContextState state = (RoomContextState) parent.getSelectedItem();
 
-             JsonObjectRequest contextRequest = new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>()
-             {
-                 @Override
-                 public void onResponse(JSONObject response)
-                 {
-                     try
-                     {
-                         String id = response.getString("id");
-                         int lightLevel = Integer.parseInt(response.getJSONObject("light").get("level").toString());
-                         String lightStatus = response.getJSONObject("light").get("status").toString();
+                httpManager.retrieveRoomsLights(state.getId());
+            }
 
-                         RoomContextState context = new RoomContextState(id, lightStatus, lightLevel);
-                         onUpdate(context);
-                     }
-                     catch (JSONException e)
-                     {
-                         e.printStackTrace();
-                     }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+            }
+        });
 
-                 }
-             },
-                     new Response.ErrorListener()
-                     {
-                         @Override
-                         public void onErrorResponse(VolleyError error)
-                         {
-                             error.printStackTrace();
-                         }
-                     });
-             queue.add(contextRequest);
-         }
+        lightSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                lightState = (LightContextState) parent.getSelectedItem();
 
-         void retrieveRoomContextState(String room)
-         {
-             String url = CONTEXT_SERVER_URL + "/" + room + "/";
+                toggle.setEnabled(true);
 
-             RequestQueue queue = Volley.newRequestQueue(ContextManagementActivity.this);
+                updateLightState(lightState);
+            }
 
-             JsonObjectRequest contextRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>()
-             {
-                 @Override
-                 public void onResponse(JSONObject response)
-                 {
-                     try
-                     {
-                         String id = response.getString("id");
-                         int lightLevel = Integer.parseInt(response.getJSONObject("light").get("level").toString());
-                         String lightStatus = response.getJSONObject("light").get("status").toString();
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+            }
+        });
 
-                         RoomContextState context = new RoomContextState(id, lightStatus, lightLevel);
-                         onUpdate(context);
-                     }
-                     catch (JSONException e)
-                     {
-                         e.printStackTrace();
-                     }
+        toggle.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                switchLight();
+            }
+        });
 
-                 }
-             },
-                     new Response.ErrorListener()
-                     {
-                         @Override
-                         public void onErrorResponse(VolleyError error)
-                         {
-                             error.printStackTrace();
-                         }
-                     });
-             queue.add(contextRequest);
-         }
+        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                level.setTextColor(getResources().getColor(R.color.change));
+                level.setText(Integer.toString(progress));
+            }
 
-         void onUpdate(RoomContextState context)
-         {
-             state = context;
-             ContextManagementActivity.this.updateContextView();
-         }
-     }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+                setLightLevel(seekbar.getProgress());
+            }
+        });
+
+        httpManager.retrieveAllBuildingsContextState();
+    }
+
+    public void switchLight()
+    {
+        httpManager.switchLight(lightState);
+    }
+
+    public void setLightLevel(int level) { httpManager.setLightLevel(lightState, level);}
+
+    private void updateSpinner(ArrayList<?> states, @NonNull Spinner spinner)
+    {
+        ArrayAdapter<?> arrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, states);
+        arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
+        spinner.setAdapter(arrayAdapter);
+        arrayAdapter.notifyDataSetChanged();
+    }
+
+    public void updateBuildingSpinner(ArrayList<BuildingContextState> states)
+    {
+        updateSpinner(states, buildingSpinner);
+    }
+
+    public void updateRoomsSpinner(ArrayList<RoomContextState> states)
+    {
+        updateSpinner(states, roomSpinner);
+    }
+
+    public void updateLightsSpinner(ArrayList<LightContextState> states)
+    {
+        updateSpinner(states, lightSpinner);
+    }
+
+    public void updateLightState(LightContextState state)
+    {
+        if (state.getStatus().equals("ON"))
+        {
+            bulb.setImageResource(R.drawable.ic_bulb_on);
+            toggle.setChecked(true);
+        }
+        else
+        {
+            bulb.setImageResource(R.drawable.ic_bulb_off);
+            toggle.setChecked(false);
+        }
+        status.setText(state.getStatus());
+        seekbar.setProgress(state.getLevel());
+        level.setText(Integer.toString(state.getLevel()));
+        level.setTextColor(getResources().getColor(R.color.valid));
+    }
 }
