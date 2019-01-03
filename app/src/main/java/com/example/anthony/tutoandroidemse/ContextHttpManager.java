@@ -1,5 +1,7 @@
 package com.example.anthony.tutoandroidemse;
 
+import android.widget.Spinner;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -61,9 +63,8 @@ class ContextHttpManager
 
     void setLightLevel(final LightContextState state, int level)
     {
-        String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/switch";
+        String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/level/" + level;
 
-        /*
         JsonObjectRequest contextRequest = new JsonObjectRequest(Request.Method.PUT, url, null, new Response.Listener<JSONObject>()
         {
             @Override
@@ -71,7 +72,7 @@ class ContextHttpManager
             {
                 try
                 {
-                    state.setStatus(response.getString("status"));
+                    state.setLevel(response.getInt("level"));
 
                     activity.updateLightState(state);
                 } catch (JSONException e)
@@ -90,13 +91,9 @@ class ContextHttpManager
                     }
                 });
         queue.add(contextRequest);
-        */
-
-        state.setLevel(level);
-        activity.updateLightState(state);
     }
 
-    void retrieveAllBuildingsContextState()
+    void retrieveAllBuildingsContextState(final Spinner spinner)
     {
         String url = CONTEXT_SERVER_URL + "buildings";
 
@@ -118,7 +115,7 @@ class ContextHttpManager
                         BuildingContextState state = new BuildingContextState(id, name);
                         states.add(state);
                     }
-                    activity.updateBuildingSpinner(states);
+                    activity.updateSpinner(states, spinner);
                 } catch (JSONException e)
                 {
                     e.printStackTrace();

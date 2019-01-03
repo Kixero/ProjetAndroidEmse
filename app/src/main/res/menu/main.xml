@@ -1,10 +1,17 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/add"
+        android:title="@string/new_object" />
+    <item
+        android:id="@+id/refresh"
+        android:title="@string/refresh" />
+    <item
+        android:id="@+id/about"
         android:orderInCategory="100"
-        android:title="About"
-        app:showAsAction="never"/>
+        android:title="@string/about"
+        app:showAsAction="never" />
 
 </menu>

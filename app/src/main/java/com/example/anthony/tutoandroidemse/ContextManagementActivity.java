@@ -1,37 +1,24 @@
 package com.example.anthony.tutoandroidemse;
 
-import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.view.ActionProvider;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
-public class ContextManagementActivity extends Activity
+public class ContextManagementActivity extends FragmentActivity
 {
     private Spinner buildingSpinner, roomSpinner, lightSpinner;
     private TextView status, level;
@@ -51,7 +38,7 @@ public class ContextManagementActivity extends Activity
 
         httpManager = new ContextHttpManager(this);
 
-        buildingSpinner = findViewById(R.id.buildingSpinner);
+        buildingSpinner = findViewById(R.id.item_choice);
         roomSpinner = findViewById(R.id.roomSpinner);
         lightSpinner = findViewById(R.id.lightSpinner);
 
@@ -68,6 +55,7 @@ public class ContextManagementActivity extends Activity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
                 BuildingContextState state = (BuildingContextState) parent.getSelectedItem();
+                findViewById(R.id.roomText).setVisibility(View.VISIBLE);
 
                 httpManager.retrieveBuildingsRooms(state.getId());
             }
@@ -84,6 +72,7 @@ public class ContextManagementActivity extends Activity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
                 RoomContextState state = (RoomContextState) parent.getSelectedItem();
+                findViewById(R.id.lightText).setVisibility(View.VISIBLE);
 
                 httpManager.retrieveRoomsLights(state.getId());
             }
@@ -142,7 +131,50 @@ public class ContextManagementActivity extends Activity
             }
         });
 
-        httpManager.retrieveAllBuildingsContextState();
+        refresh();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.about :
+            {
+                Toast.makeText(this, "Made by Anthony MERANGER (Kixero)", Toast.LENGTH_SHORT).show();
+                break;
+            }
+            case R.id.refresh :
+            {
+                refresh();
+                break;
+            }
+            case R.id.add :
+            {
+                DialogFragment dialog = new NewItemDialogFragment();
+                dialog.show(getSupportFragmentManager(), "New Item Dialog");
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void refresh()
+    {
+        roomSpinner.setVisibility(View.INVISIBLE);
+        lightSpinner.setVisibility(View.INVISIBLE);
+        httpManager.retrieveAllBuildingsContextState(buildingSpinner);
+    }
+
+    public void retrieveAllBuildings(Spinner spinner)
+    {
+        httpManager.retrieveAllBuildingsContextState(spinner);
     }
 
     public void switchLight()
@@ -152,15 +184,16 @@ public class ContextManagementActivity extends Activity
 
     public void setLightLevel(int level) { httpManager.setLightLevel(lightState, level);}
 
-    private void updateSpinner(ArrayList<?> states, @NonNull Spinner spinner)
+    void updateSpinner(ArrayList<?> states, @NonNull Spinner spinner)
     {
-        ArrayAdapter<?> arrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, states);
-        arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
+        ArrayAdapter<?> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, states);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(arrayAdapter);
+        spinner.setVisibility(View.VISIBLE);
         arrayAdapter.notifyDataSetChanged();
     }
 
-    public void updateBuildingSpinner(ArrayList<BuildingContextState> states)
+    public void updateBuildingsSpinner(ArrayList<BuildingContextState> states)
     {
         updateSpinner(states, buildingSpinner);
     }
@@ -192,4 +225,6 @@ public class ContextManagementActivity extends Activity
         level.setText(Integer.toString(state.getLevel()));
         level.setTextColor(getResources().getColor(R.color.valid));
     }
+
+    public void createItem(){}
 }
