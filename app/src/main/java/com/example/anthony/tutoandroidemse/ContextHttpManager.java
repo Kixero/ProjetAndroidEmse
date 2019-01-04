@@ -1,20 +1,18 @@
 package com.example.anthony.tutoandroidemse;
 
-import android.widget.Spinner;
+import android.util.SparseArray;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 class ContextHttpManager
 {
@@ -29,6 +27,7 @@ class ContextHttpManager
         queue = Volley.newRequestQueue(activity);
     }
 
+    /*
     void switchLight(final LightContextState state)
     {
         String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/switch";
@@ -92,93 +91,77 @@ class ContextHttpManager
                 });
         queue.add(contextRequest);
     }
+    */
 
-    void retrieveAllBuildingsContextState(final Spinner spinner)
+    void getBuildingsAndRooms()
     {
         String url = CONTEXT_SERVER_URL + "buildings";
 
-        JsonArrayRequest contextRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>()
+        JsonArrayRequest contextRequest = new JsonArrayRequest(Request.Method.GET, url, null, response ->
         {
-            @Override
-            public void onResponse(JSONArray response)
+            try
             {
-                try
-                {
-                    ArrayList<BuildingContextState> states = new ArrayList<>();
+                ArrayList<BuildingContextState> buildings = new ArrayList<>();
 
-                    for (int i = 0; i < response.length(); i++)
-                    {
-                        JSONObject building = response.getJSONObject(i);
-                        int id = building.getInt("id");
-                        String name = building.getString("name");
-
-                        BuildingContextState state = new BuildingContextState(id, name);
-                        states.add(state);
-                    }
-                    activity.updateSpinner(states, spinner);
-                } catch (JSONException e)
+                for (int i = 0; i < response.length(); i++)
                 {
-                    e.printStackTrace();
+                    JSONObject json = response.getJSONObject(i);
+                    int id = json.getInt("id");
+                    String name = json.getString("name");
+
+                    BuildingContextState building = new BuildingContextState(id, name);
+                    buildings.add(building);
                 }
+                retrieveBuildingsRooms(buildings);
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
             }
-        },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
-                    {
-                        error.printStackTrace();
-                    }
-                });
+        }, Throwable::printStackTrace);
         queue.add(contextRequest);
     }
 
-    void retrieveBuildingsRooms(final int building)
+    void retrieveBuildingsRooms(final ArrayList<BuildingContextState> buildings)
     {
         String url = CONTEXT_SERVER_URL + "rooms";
 
-        JsonArrayRequest contextRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>()
+        JsonArrayRequest contextRequest = new JsonArrayRequest(Request.Method.GET, url, null, response ->
         {
-            @Override
-            public void onResponse(JSONArray response)
+            try
             {
-                try
+                SparseArray<String> buildingsTable = new SparseArray<>();
+                HashMap<String, List<RoomContextState>> buildingsRooms = new HashMap<>();
+
+                for (BuildingContextState building : buildings)
                 {
-                    ArrayList<RoomContextState> states = new ArrayList<>();
-
-                    for (int i = 0; i < response.length(); i++)
-                    {
-                        JSONObject room = response.getJSONObject(i);
-
-                        int roomBuildingId = room.getInt("buildingId");
-
-                        if (roomBuildingId == building)
-                        {
-                            int id = room.getInt("id");
-                            String name = room.getString("name");
-                            int level = room.getInt("level");
-
-                            RoomContextState state = new RoomContextState(id, level, name, building);
-                            states.add(state);
-                        }
-                    }
-                    activity.updateRoomsSpinner(states);
-                } catch (JSONException e)
-                {
-                    e.printStackTrace();
+                    buildingsRooms.put(building.getName(), new ArrayList<>());
+                    buildingsTable.append(building.getId(), building.getName());
                 }
-            }
-        },
-                new Response.ErrorListener()
+                for (int i = 0; i < response.length(); i++)
                 {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
+                    JSONObject json = response.getJSONObject(i);
+
+                    int roomBuildingId = json.getInt("buildingId");
+
+                    if (buildingsTable.get(roomBuildingId) != null)
                     {
-                        error.printStackTrace();
+                        int id = json.getInt("id");
+                        String name = json.getString("name");
+                        int level = json.getInt("level");
+
+                        RoomContextState room = new RoomContextState(id, level, name, roomBuildingId);
+                        buildingsRooms.get(buildingsTable.valueAt(roomBuildingId)).add(room);
                     }
-                });
+                }
+                activity.updateBuildings(buildingsRooms);
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+        }, Throwable::printStackTrace);
         queue.add(contextRequest);
     }
+    /*
 
     void retrieveRoomsLights(int room)
     {
@@ -222,4 +205,5 @@ class ContextHttpManager
                 });
         queue.add(contextRequest);
     }
+    */
 }

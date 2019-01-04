@@ -1,34 +1,26 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class ContextManagementActivity extends FragmentActivity
 {
-    private Spinner buildingSpinner, roomSpinner, lightSpinner;
-    private TextView status, level;
-    private ImageView bulb;
-    private Switch toggle;
-    private SeekBar seekbar;
-
-    private LightContextState lightState;
-
     private ContextHttpManager httpManager;
+
+    ExpandableListView buildingsList;
+    List<String> buildingsListTitle;
+    HashMap<String, List<RoomContextState>> buildingsListDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -38,17 +30,47 @@ public class ContextManagementActivity extends FragmentActivity
 
         httpManager = new ContextHttpManager(this);
 
-        buildingSpinner = findViewById(R.id.item_choice);
-        roomSpinner = findViewById(R.id.roomSpinner);
-        lightSpinner = findViewById(R.id.lightSpinner);
+        buildingsList = findViewById(R.id.buildingsList);
 
-        level = findViewById(R.id.levelValue);
-        status = findViewById(R.id.statusValue);
+        buildingsList.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener()
+        {
+            @Override
+            public void onGroupExpand(int groupPosition)
+            {
+                Toast.makeText(ContextManagementActivity.this, buildingsListTitle.get(groupPosition), Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        bulb = findViewById(R.id.bulb);
-        toggle = findViewById(R.id.toggle);
-        seekbar = findViewById(R.id.seekBar);
+        buildingsList.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener()
+        {
+            @Override
+            public void onGroupCollapse(int groupPosition)
+            {
+                Toast.makeText(ContextManagementActivity.this, buildingsListTitle.get(groupPosition), Toast.LENGTH_SHORT).show();
+            }
+        });
 
+        buildingsList.setOnChildClickListener(new ExpandableListView.OnChildClickListener()
+        {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id)
+            {
+                Toast.makeText(
+                        getApplicationContext(),
+                        buildingsListTitle.get(groupPosition)
+                                + " -> "
+                                + buildingsListDetail.get(
+                                buildingsListTitle.get(groupPosition)).get(
+                                childPosition), Toast.LENGTH_SHORT
+                ).show();
+                return false;
+            }
+        });
+
+        httpManager.getBuildingsAndRooms();
+
+
+        /*
         buildingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
             @Override
@@ -132,6 +154,7 @@ public class ContextManagementActivity extends FragmentActivity
         });
 
         refresh();
+        */
     }
 
     @Override
@@ -152,7 +175,7 @@ public class ContextManagementActivity extends FragmentActivity
             }
             case R.id.refresh :
             {
-                refresh();
+                //refresh();
                 break;
             }
             case R.id.add :
@@ -165,66 +188,35 @@ public class ContextManagementActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
+    void updateBuildings(HashMap<String, List<RoomContextState>> buildingsListDetail)
+    {
+        this.buildingsListDetail = buildingsListDetail;
+        buildingsListTitle = new ArrayList<>(buildingsListDetail.keySet());
+        CustomExpandableListAdapter<RoomContextState> expandableListAdapter = new CustomExpandableListAdapter<>(this, buildingsListTitle, buildingsListDetail);
+
+        buildingsList.setAdapter(expandableListAdapter);
+    }
+
+    /*
     public void refresh()
     {
         roomSpinner.setVisibility(View.INVISIBLE);
         lightSpinner.setVisibility(View.INVISIBLE);
         httpManager.retrieveAllBuildingsContextState(buildingSpinner);
     }
+    */
 
-    public void retrieveAllBuildings(Spinner spinner)
+    public void retrieveAllBuildings()
     {
-        httpManager.retrieveAllBuildingsContextState(spinner);
+        //httpManager.retrieveAllBuildingsContextState();
     }
 
     public void switchLight()
     {
-        httpManager.switchLight(lightState);
+        //httpManager.switchLight();
     }
 
-    public void setLightLevel(int level) { httpManager.setLightLevel(lightState, level);}
-
-    void updateSpinner(ArrayList<?> states, @NonNull Spinner spinner)
-    {
-        ArrayAdapter<?> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, states);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(arrayAdapter);
-        spinner.setVisibility(View.VISIBLE);
-        arrayAdapter.notifyDataSetChanged();
-    }
-
-    public void updateBuildingsSpinner(ArrayList<BuildingContextState> states)
-    {
-        updateSpinner(states, buildingSpinner);
-    }
-
-    public void updateRoomsSpinner(ArrayList<RoomContextState> states)
-    {
-        updateSpinner(states, roomSpinner);
-    }
-
-    public void updateLightsSpinner(ArrayList<LightContextState> states)
-    {
-        updateSpinner(states, lightSpinner);
-    }
-
-    public void updateLightState(LightContextState state)
-    {
-        if (state.getStatus().equals("ON"))
-        {
-            bulb.setImageResource(R.drawable.ic_bulb_on);
-            toggle.setChecked(true);
-        }
-        else
-        {
-            bulb.setImageResource(R.drawable.ic_bulb_off);
-            toggle.setChecked(false);
-        }
-        status.setText(state.getStatus());
-        seekbar.setProgress(state.getLevel());
-        level.setText(Integer.toString(state.getLevel()));
-        level.setTextColor(getResources().getColor(R.color.valid));
-    }
+    //public void setLightLevel(int level) { httpManager.setLightLevel(lightState, level);}
 
     public void createItem(){}
 }
