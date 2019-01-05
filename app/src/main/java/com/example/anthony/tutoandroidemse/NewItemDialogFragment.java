@@ -78,7 +78,7 @@ public class NewItemDialogFragment extends DialogFragment
                         text.setVisibility(View.VISIBLE);
 
                         Spinner spinner = viewGroup.findViewById(R.id.spinner);
-                        activity.retrieveAllBuildings(spinner);
+                        //activity.retrieveAllBuildings(spinner);
                         spinner.setVisibility(View.VISIBLE);
 
                         viewGroup.findViewById(R.id.text_id).setVisibility(View.VISIBLE);

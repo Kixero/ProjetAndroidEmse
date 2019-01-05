@@ -7,4 +7,6 @@
     <color name="red">#d81b1b</color>
     <color name="valid">#45a372</color>
     <color name="change">#cc922e</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
 </resources>

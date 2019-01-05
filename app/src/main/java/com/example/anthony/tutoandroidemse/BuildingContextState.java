@@ -7,7 +7,7 @@ public class BuildingContextState
     private int id;
     private String name;
 
-    public BuildingContextState(int id, String name)
+    BuildingContextState(int id, String name)
     {
         this.id = id;
         this.name = name;
