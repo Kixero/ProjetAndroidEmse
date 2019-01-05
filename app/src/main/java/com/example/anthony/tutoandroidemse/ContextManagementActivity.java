@@ -1,6 +1,7 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,7 +32,7 @@ public class ContextManagementActivity extends FragmentActivity
 
         httpManager = new ContextHttpManager(this);
 
-        buildingsList = findViewById(R.id.parentLayout);
+        buildingsList = findViewById(R.id.linearLayout);
 
         refresh();
     }
@@ -45,7 +46,7 @@ public class ContextManagementActivity extends FragmentActivity
             ((TextView) view.findViewById(R.id.text)).setText(building.getName());
             buildingsList.addView(view);
 
-            httpManager.getRooms(view, building.getId());
+            httpManager.getRooms(view.findViewById(R.id.list), building.getId());
         }
     }
 
