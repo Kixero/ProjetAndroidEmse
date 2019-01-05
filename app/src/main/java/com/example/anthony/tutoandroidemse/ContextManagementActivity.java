@@ -33,7 +33,7 @@ public class ContextManagementActivity extends FragmentActivity
 
         buildingsList = findViewById(R.id.parentLayout);
 
-        httpManager.getBuildings();
+        refresh();
     }
 
     void updateBuildings(ArrayList<BuildingContextState> buildings)
@@ -87,6 +87,12 @@ public class ContextManagementActivity extends FragmentActivity
         view.setProgress(light.getLevel());
     }
 
+    void refresh()
+    {
+        buildingsList.removeAllViewsInLayout();
+        httpManager.getBuildings();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
@@ -105,7 +111,7 @@ public class ContextManagementActivity extends FragmentActivity
             }
             case R.id.refresh :
             {
-                //refresh();
+                refresh();
                 break;
             }
         }
