@@ -1,27 +1,32 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.content.Context;
-import android.graphics.Typeface;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CustomExpandableListAdapter<T> extends BaseExpandableListAdapter
+public class RoomsExpandableListAdapter<T> extends BaseExpandableListAdapter
 {
     private Context context;
     private List<String> expandableListTitle;
     private HashMap<String, List<T>> expandableListDetail;
 
-    CustomExpandableListAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<T>> expandableListDetail)
+    RoomsExpandableListAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<T>> expandableListDetail)
     {
         this.context = context;
-        this.expandableListDetail = expandableListDetail;
         this.expandableListTitle = expandableListTitle;
+        this.expandableListDetail = expandableListDetail;
     }
 
     @Override
@@ -44,10 +49,17 @@ public class CustomExpandableListAdapter<T> extends BaseExpandableListAdapter
         if (convertView == null)
         {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = layoutInflater.inflate(R.layout.list_item, null);
+            convertView = layoutInflater.inflate(R.layout.list_lights, null);
         }
-        TextView expandedListTextView = convertView.findViewById(R.id.expandedListItem);
-        expandedListTextView.setText(expandedListText);
+        TextView textView = convertView.findViewById(R.id.light_item);
+        textView.setText(expandedListText);
+
+        ToggleButton toggle = convertView.findViewById(R.id.toggle);
+        toggle.setOnClickListener(v ->
+        {
+            //((ContextManagementActivity)context).switchLight(light);
+        });
+
         return convertView;
     }
 
@@ -77,17 +89,17 @@ public class CustomExpandableListAdapter<T> extends BaseExpandableListAdapter
     @Override
     public View getGroupView(int listPosition, boolean isExpanded, View convertView, ViewGroup parent)
     {
-        String listTitle = (String) getGroup(listPosition);
+        final String roomTitle = getGroup(listPosition).toString();
 
         if (convertView == null)
         {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = layoutInflater.inflate(R.layout.list_group, null);
+            convertView = layoutInflater.inflate(R.layout.list_rooms, null);
         }
 
-        TextView listTitleTextView = convertView.findViewById(R.id.listGroup);
-        listTitleTextView.setTypeface(null, Typeface.BOLD);
-        listTitleTextView.setText(listTitle);
+        TextView expandedRoomListView = convertView.findViewById(R.id.room_item);
+        expandedRoomListView.setText(roomTitle);
+
         return convertView;
     }
 
