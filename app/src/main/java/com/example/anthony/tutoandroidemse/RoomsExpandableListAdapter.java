@@ -1,28 +1,24 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class RoomsExpandableListAdapter<T> extends BaseExpandableListAdapter
+public class RoomsExpandableListAdapter extends BaseExpandableListAdapter
 {
     private Context context;
     private List<String> expandableListTitle;
-    private HashMap<String, List<T>> expandableListDetail;
+    private HashMap<String, List<LightContextState>> expandableListDetail;
 
-    RoomsExpandableListAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<T>> expandableListDetail)
+    RoomsExpandableListAdapter(Context context, List<String> expandableListTitle, HashMap<String, List<LightContextState>> expandableListDetail)
     {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
@@ -54,11 +50,33 @@ public class RoomsExpandableListAdapter<T> extends BaseExpandableListAdapter
         TextView textView = convertView.findViewById(R.id.light_item);
         textView.setText(expandedListText);
 
-        ToggleButton toggle = convertView.findViewById(R.id.toggle);
-        toggle.setOnClickListener(v ->
+        LightContextState light = expandableListDetail.get(expandableListTitle.get(listPosition)).get(expandedListPosition);
+
+        convertView.findViewById(R.id.toggle).setOnClickListener(v ->
+                ((ContextManagementActivity)context).switchLight((ImageButton)v, light));
+
+        ((SeekBar)convertView.findViewById(R.id.seekBar)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
         {
-            //((ContextManagementActivity)context).switchLight(light);
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+            {
+                light.setLevel(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar)
+            {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar)
+            {
+                ((ContextManagementActivity)context).setLightLevel(seekBar, light);
+            }
         });
+
+        ((ContextManagementActivity)context).updateLight(convertView, light);
 
         return convertView;
     }

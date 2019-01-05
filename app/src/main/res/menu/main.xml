@@ -3,9 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/add"
-        android:title="@string/new_object" />
-    <item
         android:id="@+id/refresh"
         android:title="@string/refresh" />
     <item

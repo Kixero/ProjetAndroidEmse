@@ -1,16 +1,15 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,13 +57,34 @@ public class ContextManagementActivity extends FragmentActivity
             roomsName.add(room.getName());
         }
         ExpandableListView expandableView = (ExpandableListView)getLayoutInflater().inflate(R.layout.rooms_expandable, null);
-        expandableView.setAdapter(new RoomsExpandableListAdapter<>(this, roomsName, lights));
+        expandableView.setAdapter(new RoomsExpandableListAdapter(this, roomsName, lights));
         ((LinearLayout)buildingView).addView(expandableView);
     }
 
-    void switchLight(LightContextState light)
+    void switchLight(ImageButton lightView, LightContextState light)
     {
-        httpManager.switchLight(light);
+        httpManager.switchLight(lightView, light);
+    }
+
+    void setLightLevel(SeekBar view, LightContextState light)
+    {
+        httpManager.setLightLevel(view, light);
+    }
+
+    void updateLight(View view, LightContextState light)
+    {
+        updateLightState(view.findViewById(R.id.toggle), light);
+        updateLightLevel(view.findViewById(R.id.seekBar), light);
+    }
+
+    void updateLightState(ImageButton view, LightContextState light)
+    {
+        view.setBackgroundResource(light.getStatus().equals("ON") ? R.drawable.ic_bulb_on : R.drawable.ic_bulb_off);
+    }
+
+    void updateLightLevel(SeekBar view, LightContextState light)
+    {
+        view.setProgress(light.getLevel());
     }
 
     @Override

@@ -2,11 +2,11 @@ package com.example.anthony.tutoandroidemse;
 
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -31,7 +31,7 @@ class ContextHttpManager
         queue = Volley.newRequestQueue(activity);
     }
 
-    void switchLight(final LightContextState state)
+    void switchLight(final ImageButton lightView, final LightContextState state)
     {
         String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/switch";
 
@@ -41,7 +41,7 @@ class ContextHttpManager
             {
                 state.setStatus(response.getString("status"));
 
-                //activity.updateLightState(state);
+                activity.updateLightState(lightView, state);
             } catch (JSONException e)
             {
                 e.printStackTrace();
@@ -51,39 +51,25 @@ class ContextHttpManager
         queue.add(contextRequest);
     }
 
-    /*
-    void setLightLevel(final LightContextState state, int level)
+    void setLightLevel(final SeekBar view, final LightContextState state)
     {
-        String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/level/" + level;
+        String url = CONTEXT_SERVER_URL + "lights/" + state.getId() + "/level/" + state.getLevel();
 
-        JsonObjectRequest contextRequest = new JsonObjectRequest(Request.Method.PUT, url, null, new Response.Listener<JSONObject>()
+        JsonObjectRequest contextRequest = new JsonObjectRequest(Request.Method.PUT, url, null, response ->
         {
-            @Override
-            public void onResponse(JSONObject response)
+            try
             {
-                try
-                {
-                    state.setLevel(response.getInt("level"));
+                state.setLevel(response.getInt("level"));
 
-                    activity.updateLightState(state);
-                } catch (JSONException e)
-                {
-                    e.printStackTrace();
-                }
-
+                activity.updateLightLevel(view, state);
+            } catch (JSONException e)
+            {
+                e.printStackTrace();
             }
-        },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
-                    {
-                        error.printStackTrace();
-                    }
-                });
+
+        }, Throwable::printStackTrace);
         queue.add(contextRequest);
     }
-    */
 
     void getBuildings()
     {
