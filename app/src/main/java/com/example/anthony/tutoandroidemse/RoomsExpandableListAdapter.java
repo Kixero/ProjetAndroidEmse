@@ -118,6 +118,15 @@ public class RoomsExpandableListAdapter extends BaseExpandableListAdapter
         TextView expandedRoomListView = convertView.findViewById(R.id.room_item);
         expandedRoomListView.setText(roomTitle);
 
+        convertView.findViewById(R.id.add_light).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                ((ContextManagementActivity)context).createLight(new LightContextState(4, 24, 0, "ON"));
+            }
+        });
+
         return convertView;
     }
 

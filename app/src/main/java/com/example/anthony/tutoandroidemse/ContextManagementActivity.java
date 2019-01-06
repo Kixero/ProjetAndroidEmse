@@ -88,6 +88,11 @@ public class ContextManagementActivity extends FragmentActivity
         view.setProgress(light.getLevel());
     }
 
+    void createLight(LightContextState light)
+    {
+        httpManager.createLight(light);
+    }
+
     void refresh()
     {
         buildingsList.removeAllViewsInLayout();
