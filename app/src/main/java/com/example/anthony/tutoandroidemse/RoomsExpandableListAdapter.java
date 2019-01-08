@@ -1,6 +1,7 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.content.Context;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,14 +119,8 @@ public class RoomsExpandableListAdapter extends BaseExpandableListAdapter
         TextView expandedRoomListView = convertView.findViewById(R.id.room_item);
         expandedRoomListView.setText(roomTitle);
 
-        convertView.findViewById(R.id.add_light).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                ((ContextManagementActivity)context).createLight(new LightContextState(4, 24, 0, "ON"));
-            }
-        });
+        convertView.findViewById(R.id.add_light).setOnClickListener(v ->
+                ((ContextManagementActivity)context).openNewLightDialog());
 
         return convertView;
     }

@@ -1,7 +1,6 @@
 package com.example.anthony.tutoandroidemse;
 
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,7 +42,8 @@ public class ContextManagementActivity extends FragmentActivity
         for (BuildingContextState building : buildings)
         {
             View view = inflater.inflate(R.layout.list_buildings, null);
-            ((TextView) view.findViewById(R.id.text)).setText(building.getName());
+            ((TextView) view.findViewById(R.id.text)).setText(building.toString());
+            view.findViewById(R.id.add_room).setOnClickListener(v -> openNewRoomDialog());
             buildingsList.addView(view);
 
             httpManager.getRooms(view.findViewById(R.id.list), building.getId());
@@ -76,6 +76,7 @@ public class ContextManagementActivity extends FragmentActivity
     {
         updateLightState(view.findViewById(R.id.toggle), light);
         updateLightLevel(view.findViewById(R.id.seekBar), light);
+
     }
 
     void updateLightState(ImageButton view, LightContextState light)
@@ -93,11 +94,29 @@ public class ContextManagementActivity extends FragmentActivity
         httpManager.createLight(light);
     }
 
+    void createRoom(RoomContextState room)
+    {
+        httpManager.createRoom(room);
+    }
+
     void refresh()
     {
         buildingsList.removeAllViewsInLayout();
         httpManager.getBuildings();
     }
+
+    void openNewLightDialog()
+    {
+        NewLightDialogFragment dialog = new NewLightDialogFragment();
+        dialog.show(getSupportFragmentManager(), "Light Dialog");
+    }
+
+    void openNewRoomDialog()
+    {
+        NewRoomDialogFragment dialog = new NewRoomDialogFragment();
+        dialog.show(getSupportFragmentManager(), "Room Dialog");
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

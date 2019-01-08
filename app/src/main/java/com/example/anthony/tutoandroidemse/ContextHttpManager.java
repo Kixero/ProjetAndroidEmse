@@ -224,4 +224,51 @@ class ContextHttpManager
         };
         queue.add(contextRequest);
     }
+
+    void createRoom(RoomContextState room)
+    {
+        String url = CONTEXT_SERVER_URL + "rooms";
+
+        JSONObject jsonRequest = new JSONObject();
+        try
+        {
+            jsonRequest.put("id", room.getId());
+            jsonRequest.put("name", room.getName());
+            jsonRequest.put("level", room.getLevel());
+            jsonRequest.put("buildingId", room.getBuildingId());
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        final String requestString = jsonRequest.toString();
+
+        StringRequest contextRequest = new StringRequest(Request.Method.POST, url, response -> activity.refresh(), Throwable::printStackTrace)
+        {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError
+            {
+                try {
+                    return requestString == null ? null : requestString.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestString, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+        queue.add(contextRequest);
+    }
 }

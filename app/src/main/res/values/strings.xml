@@ -3,7 +3,8 @@
     <string name="buildings">Buildings</string>
     <string name="room">Room</string>
     <string name="light">Light</string>
-    <string name="level">Light Level</string>
+    <string name="light_level">Light Level</string>
+    <string name="level">Level</string>
     <string name="status">Status</string>
     <string name="lightonoff">Light ON/OFF</string>
     <string name="ok">OK</string>
@@ -16,4 +17,7 @@
     <string name="name">Name</string>
     <string name="new_room">New Room</string>
     <string name="new_light">New Light</string>
+    <string name="id">ID</string>
+    <string name="room_id">Room ID</string>
+    <string name="building_id">Building ID</string>
 </resources>
